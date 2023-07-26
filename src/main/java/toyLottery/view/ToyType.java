@@ -97,14 +97,14 @@ public class ToyType implements ToyTypeModel {
      * @return int
      */
     @Override
-    public int getID() {
+    public int getIdType() {
         return this.idToyType;
     }
 
 
     @Override
     public String toString() {
-        return String.format("id: %-2d  dname: %-20s  weight: %-3d  count: %-2d ",
+        return String.format("id: %-2d  name: %-20s  weight: %-3d  count: %-2d ",
                 this.idToyType,
                 this.nameType,
                 getWeight(),

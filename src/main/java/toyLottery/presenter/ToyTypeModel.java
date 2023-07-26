@@ -51,6 +51,6 @@ public interface ToyTypeModel {
      * Gets typeToy ID
      * @return int
      */
-    int getID();
+    int getIdType();
 
 }

@@ -1,6 +1,7 @@
 package toyLottery.presenter;
 
 import toyLottery.model.Toy;
+import toyLottery.view.FileReadWriter;
 import toyLottery.view.ToyType;
 
 import java.util.*;
@@ -35,10 +36,10 @@ public class ToyLottery {
         while (choise !=0) {
             switch (choise) {
                 case 1 -> {
-                    System.out.println("Чтение из файла");
+                    this.readToysFromFile();
                 }
                 case 2 -> {
-                    System.out.println("Запись в файл");
+                    this.writeToysToFile();
                 }
                 case 3 -> {
                     System.out.println("Показать ассортимент");
@@ -47,10 +48,10 @@ public class ToyLottery {
                     this.loadDemo();
                 }
                 case 5 -> {
-                    System.out.println("Добавить");
+                    this.menuAddToy();
                 }
                 case 6 -> {
-                    System.out.println("Изменить вес");
+                    this.menuChangeWeight();
                 }
                 case 7 -> {
                     System.out.println("Розыгрыш приза");
@@ -61,24 +62,6 @@ public class ToyLottery {
         System.out.println("The end!");
 
     }
-
-//    /**
-//     * Manages the lottery
-//     */
-//    private void lottery() {
-//        int lotteryChoice = lotteryMenu();
-//        while (lotteryChoice != 0) {
-//            switch (lotteryChoice) {
-//                case 1 -> {
-//                    System.out.println("Изменить вес");
-//                }
-//                case 2 -> {
-//                    System.out.println("Запуск лотереи");
-//                }
-//            }
-//            lotteryChoice = lotteryMenu();
-//        }
-//    }
 
     /**
      * Provides a choice to the user from main menu
@@ -91,18 +74,43 @@ public class ToyLottery {
             System.out.println("Магазин пуст");
         }
         System.out.println("-".repeat(55));
-        return getIntFromConsole("[0] Выход         [1] Чтение из файла  [2] Запись в файл\n[3] Показать      " +
-                "[4] Загрузить демо   [5] Добавить\n[6] Изменить вес  [7] Розыгрыш приза");
+        return getIntFromConsole("""
+                [0] Выход         [1] Чтение из файла  [2] Запись в файл
+                [3] Показать      [4] Загрузить демо   [5] Добавить
+                [6] Изменить вес  [7] Розыгрыш приза""");
 
     }
 
-//    /**
-//     * Provides a choice to the user from lottery menu
-//     * @return int choice
-//     */
-//    private int lotteryMenu() {
-//        return getIntFromConsole("[0] Главное меню  [1] Изменить вес  [2] Запуск лотереи");
-//    }
+    /**
+     * Provides the user with the ability to add toys to the collection
+     */
+    private void menuAddToy() {
+        System.out.println("Название игрушки:");
+        String name = myScanner.nextLine();
+        int number = getIntFromConsole("Количество игрушек");
+        if (number <= 0) menuAddToy();
+        this.addToys(name, number);
+    }
+
+    /**
+     * Provides the user with the ability to change id toyType in the lottery
+     */
+    private void menuChangeWeight() {
+        if (toyTypes.size() > 0) {
+            int id = this.getIntFromConsole("Введите id игрушки:");
+            int index = this.getIndexOf(id);
+            if (index == -1) {
+                System.out.println("Нет игрушки с таким id.");
+                this.menuChangeWeight();
+            }
+            int weight = this.getIntFromConsole("Введите вес:");
+            if (weight < 0) {
+                System.out.println("Вес не может быть отрицательным числом.");
+                this.menuChangeWeight();
+            }
+            toyTypes.get(index).setWeight(weight);
+        }
+    }
 
     /**
      * Loads this.toyTypes
@@ -113,30 +121,61 @@ public class ToyLottery {
         this.addToys("Монстр-трак", 3);
         this.addToys("Велосипед", 1);
         this.addToys("Пистолет", 3);
-        this.addToys("Грузовик", 2);
+        this.addToys("Робот", 2);
+    }
+
+    /**
+     * Writes all toys from stock to file
+     */
+    private void writeToysToFile() {
+        List<String> listToys = new LinkedList<>();
+        for (ToyTypeModel toyType: toyTypes) {
+            toyType.getToys().forEach(x -> listToys.add(String.format("%s;%d",x.getName(), x.getID())));
+        }
+        new FileReadWriter().writeFile("/toys.csv", listToys);
+    }
+
+    /**
+     * Reads toys from file
+     */
+    private void readToysFromFile() {
+        List<String> listToys = new FileReadWriter().readFile("/toys.csv");
+        toyTypes.clear();
+        int index;
+        String[] array;
+        Toy toy;
+        ToyType toyType;
+        for (String line: listToys) {
+            array = line.split(";");
+            index = getIndexOf(array[0]);
+            if (index == -1) {
+                toyType = new ToyType(array[0], getIdToyType());
+                toy = new Toy(array[0], Integer.parseInt(array[1]));
+                toyType.addToy(toy);
+                toyTypes.add(toyType);
+            } else {
+                toy = new Toy(array[0], Integer.parseInt(array[1]));
+                toyTypes.get(index).addToy(toy);
+            }
+        }
     }
 
     /**
      * Adds toys to toyTypes collection
      */
     private void addToys(String name, int number) {
-//        System.out.println("Название игрушки:");
-//        String name = myScanner.nextLine();
-//        int number = getIntFromConsole("Количество игрушек");
-
         Toy toy;
-        int index = getIndexOf(name);
-        if (index == -1) {
-            ToyType toyType = new ToyType(name, getIdToyType());
-            for (int i = 0; i < number; i++) {
-                toy = new Toy(name, getIdToy());
-                toyType.addToy(toy);
-            }
-            this.toyTypes.add(toyType);
-        } else {
-            for (int i = 0; i < number; i++) {
-                toy = new Toy(name, getIdToy());
-                this.toyTypes.get(index).addToy(toy);
+        int index;
+        for (int i = 0; i < number; i++) {
+            index = getIndexOf(name);
+            if (index == -1) {
+                ToyType toyType = new ToyType(name, getIdToyType());
+                    toy = new Toy(name, getIdToy());
+                    toyType.addToy(toy);
+                this.toyTypes.add(toyType);
+            } else {
+                    toy = new Toy(name, getIdToy());
+                    this.toyTypes.get(index).addToy(toy);
             }
         }
     }
@@ -158,6 +197,25 @@ public class ToyLottery {
         }
         return index;
     }
+
+    /**
+     * Gets index with id equal id toyType
+     * @param id id toyType
+     * @return int
+     */
+    private int getIndexOf(int id) {
+        int index = -1;
+        if (toyTypes.size() > 0) {
+            for (int i = 0; i < toyTypes.size(); i++) {
+                if (toyTypes.get(i).getIdType() == id) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        return index;
+    }
+
     /**
      * Gets int number from console
      * @return int
@@ -193,7 +251,7 @@ public class ToyLottery {
         int index = 1;
         if (toyTypes.size() > 0) {
             List<Integer> listIdToyTypes = new LinkedList<>();
-            toyTypes.forEach(x -> listIdToyTypes.add(x.getID()));
+            toyTypes.forEach(x -> listIdToyTypes.add(x.getIdType()));
             index = Collections.max(listIdToyTypes) + 1;
         }
         return index;
