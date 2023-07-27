@@ -1,14 +1,13 @@
 package toyLottery.view;
 
 import toyLottery.presenter.FileReadWriteModel;
-import toyLottery.presenter.ToyModel;
 
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 
 public class FileReadWriter implements FileReadWriteModel {
-    private String pathProject;
+    private final String pathProject;
 
     public FileReadWriter() {
         pathProject = System.getProperty("user.dir");
@@ -22,7 +21,7 @@ public class FileReadWriter implements FileReadWriteModel {
     @Override
     public void writeFile(String fileName, List<String> listToys) {
         String pathFile = pathProject.concat(fileName);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathFile, false));){
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pathFile, false))){
             while (listToys.size() > 0) {
                 writer.write(listToys.remove(0));
                 writer.newLine();

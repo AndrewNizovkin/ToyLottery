@@ -1,26 +1,25 @@
 package toyLottery.presenter;
 
 import toyLottery.model.Toy;
-import toyLottery.view.FileReadWriter;
 import toyLottery.model.ToyType;
 
 import java.util.*;
 
 public class ToyLottery {
-    private Random rnd;
-    private String SEPARATOR = "-".repeat(55);
+    private final Random rnd;
+    private final String SEPARATOR = "-".repeat(55);
     private  static ToyLottery instance;
-    private Scanner myScanner;
-    private List<ToyTypeModel> toyTypes;
-    private List<ToyModel> prizes;
-    private FileReadWriteModel readWriter;
+    private final Scanner myScanner;
+    private final List<ToyTypeModel> toyTypes;
+    private final List<ToyModel> prizes;
+    private final FileReadWriteModel readWriter;
 
-    private ToyLottery(){
+    private ToyLottery(FileReadWriteModel readWriter){
         rnd = new Random();
         myScanner = new Scanner(System.in);
         toyTypes = new LinkedList<>();
         prizes = new LinkedList<>();
-        readWriter = new FileReadWriter();
+        this.readWriter = readWriter;
 
     }
 
@@ -28,9 +27,9 @@ public class ToyLottery {
      * Gets instance this singleton
      * @return ToyLottery instance
      */
-    public static ToyLottery getInstance(){
+    public static ToyLottery getInstance(FileReadWriteModel readWriter){
         if (instance == null) {
-            instance = new ToyLottery();
+            instance = new ToyLottery(readWriter);
         }
         return instance;
     }
@@ -42,27 +41,13 @@ public class ToyLottery {
         int choise = mainMenu();
         while (choise !=0) {
             switch (choise) {
-                case 1 -> {
-                    this.readToysFromFile();
-                }
-                case 2 -> {
-                    this.writeToysToFile();
-                }
-                case 3 -> {
-                    this.displayPrizes();
-                }
-                case 4 -> {
-                    this.loadDemo();
-                }
-                case 5 -> {
-                    this.menuAddToy();
-                }
-                case 6 -> {
-                    this.menuChangeWeight();
-                }
-                case 7 -> {
-                    this.menuLottery();
-                }
+                case 1 -> this.readToysFromFile();
+                case 2 -> this.writeToysToFile();
+                case 3 -> this.displayPrizes();
+                case 4 -> this.loadDemo();
+                case 5 -> this.menuAddToy();
+                case 6 -> this.menuChangeWeight();
+                case 7 -> this.menuLottery();
             }
             choise = mainMenu();
         }
@@ -110,12 +95,12 @@ public class ToyLottery {
             int index = this.getIndexOf(id);
             if (index == -1) {
                 System.out.println("Нет игрушки с таким id.");
-                this.menuChangeWeight();
+                return;
             }
             int weight = this.getIntFromConsole("Введите вес:");
             if (weight < 0) {
                 System.out.println("Вес не может быть отрицательным числом.");
-                this.menuChangeWeight();
+                return;
             }
             toyTypes.get(index).setWeight(weight);
         }
@@ -199,6 +184,7 @@ public class ToyLottery {
             toyType.getToys().forEach(x -> listToys.add(String.format("%s;%d",x.getName(), x.getID())));
         }
         readWriter.writeFile("/toys.csv", listToys);
+        System.out.println("Список игрушек записан в файл ./toys.csv");
     }
 
     /**
@@ -336,8 +322,5 @@ public class ToyLottery {
         }
         return index;
     }
-
-
-
 }
 

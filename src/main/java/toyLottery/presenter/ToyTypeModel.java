@@ -19,7 +19,6 @@ public interface ToyTypeModel {
     /**
      * Removes toy from toy collection
      * @return removed toy
-     * @param name toy name
      */
     ToyModel removeToy();
 

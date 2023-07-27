@@ -6,10 +6,10 @@ import toyLottery.presenter.ToyModel;
 import java.util.*;
 
 public class ToyType implements ToyTypeModel {
-    private int idToyType;
-    private List<ToyModel> toys;
+    private final int idToyType;
+    private final List<ToyModel> toys;
     private int weight;
-    private  String nameType;
+    private final String nameType;
 
     /**
      * Constructor

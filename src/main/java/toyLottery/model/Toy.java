@@ -3,8 +3,8 @@ package toyLottery.model;
 import toyLottery.presenter.ToyModel;
 
 public class Toy implements ToyModel {
-    private String name;
-    private int id;
+    private final String name;
+    private final int id;
 
     public Toy(String name, int id) {
         this.name = name;
