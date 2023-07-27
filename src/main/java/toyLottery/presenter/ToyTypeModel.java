@@ -21,7 +21,7 @@ public interface ToyTypeModel {
      * @return removed toy
      * @param name toy name
      */
-    ToyModel removeToy(String name);
+    ToyModel removeToy();
 
     /**
      * Gets toy weight in lottery

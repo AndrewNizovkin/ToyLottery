@@ -2,18 +2,25 @@ package toyLottery.presenter;
 
 import toyLottery.model.Toy;
 import toyLottery.view.FileReadWriter;
-import toyLottery.view.ToyType;
+import toyLottery.model.ToyType;
 
 import java.util.*;
 
 public class ToyLottery {
+    private Random rnd;
+    private String SEPARATOR = "-".repeat(55);
     private  static ToyLottery instance;
     private Scanner myScanner;
     private List<ToyTypeModel> toyTypes;
+    private List<ToyModel> prizes;
+    private FileReadWriteModel readWriter;
 
     private ToyLottery(){
+        rnd = new Random();
         myScanner = new Scanner(System.in);
         toyTypes = new LinkedList<>();
+        prizes = new LinkedList<>();
+        readWriter = new FileReadWriter();
 
     }
 
@@ -42,7 +49,7 @@ public class ToyLottery {
                     this.writeToysToFile();
                 }
                 case 3 -> {
-                    System.out.println("Показать ассортимент");
+                    this.displayPrizes();
                 }
                 case 4 -> {
                     this.loadDemo();
@@ -54,7 +61,7 @@ public class ToyLottery {
                     this.menuChangeWeight();
                 }
                 case 7 -> {
-                    System.out.println("Розыгрыш приза");
+                    this.menuLottery();
                 }
             }
             choise = mainMenu();
@@ -68,16 +75,18 @@ public class ToyLottery {
      * @return int choice
      */
     private int mainMenu() {
+        System.out.println();
         if (toyTypes.size() > 0) {
+            System.out.println(SEPARATOR);
             toyTypes.forEach(System.out::println);
         } else {
             System.out.println("Магазин пуст");
         }
-        System.out.println("-".repeat(55));
+        System.out.println(SEPARATOR);
         return getIntFromConsole("""
-                [0] Выход         [1] Чтение из файла  [2] Запись в файл
-                [3] Показать      [4] Загрузить демо   [5] Добавить
-                [6] Изменить вес  [7] Розыгрыш приза""");
+                [0] Выход           [1] Чтение из файла  [2] Запись в файл
+                [3] Показать призы  [4] Загрузить демо   [5] Добавить
+                [6] Изменить вес    [7] Розыгрыш приза""");
 
     }
 
@@ -113,15 +122,72 @@ public class ToyLottery {
     }
 
     /**
-     * Loads this.toyTypes
+     * Displays lottery result
+     */
+    private void menuLottery() {
+        if (toyTypes.size() > 0) {
+            String prize = lotteryRun();
+            prizes.add(extractPrize(prize));
+            removeEmptyToyType();
+            writePrizesToFile();
+            System.out.printf("Ваш приз:\n-%s-\nСписок призов сохранён в файле ./prizes.csv", prize);
+        }
+    }
+
+    /**
+     * Checks and removes empty ToyType
+     */
+    private void removeEmptyToyType() {
+        int index = -1;
+        for (int i = 0; i < toyTypes.size(); i++) {
+            if (toyTypes.get(i).getToys().size() == 0) {
+                index = i;
+            }
+        }
+        if (index >= 0) toyTypes.remove(index);
+    }
+
+    /**
+     * Loads demo to this.toyTypes
      */
     private void loadDemo() {
+        toyTypes.clear();
         this.addToys("Самолёт", 3);
         this.addToys("Грузовик", 2);
         this.addToys("Монстр-трак", 3);
         this.addToys("Велосипед", 1);
         this.addToys("Пистолет", 3);
         this.addToys("Робот", 2);
+    }
+
+    /**
+     * Display prizes
+     */
+    private void displayPrizes() {
+        if (prizes.size() == 0) {
+            System.out.println("Список призов пуст.");
+        } else {
+            System.out.println("-Список призов-");
+            prizes.forEach(x -> System.out.printf("name: %-20s  id: %-2d\n", x.getName(), x.getID()));
+        }
+    }
+
+    /**
+     * Writes prizes to file
+     */
+    private void writePrizesToFile() {
+        List<String> listPrizes = new LinkedList<>();
+        prizes.forEach(x -> listPrizes.add(String.format("%s;%d", x.getName(), x.getID())));
+        readWriter.writeFile("/prizes.csv", listPrizes);
+    }
+
+    /**
+     * Extracts toy from toyTypes
+     * @param name String toy name
+     * @return Toy instance
+     */
+    private ToyModel extractPrize(String name) {
+        return toyTypes.get(getIndexOf(name)).removeToy();
     }
 
     /**
@@ -132,14 +198,14 @@ public class ToyLottery {
         for (ToyTypeModel toyType: toyTypes) {
             toyType.getToys().forEach(x -> listToys.add(String.format("%s;%d",x.getName(), x.getID())));
         }
-        new FileReadWriter().writeFile("/toys.csv", listToys);
+        readWriter.writeFile("/toys.csv", listToys);
     }
 
     /**
      * Reads toys from file
      */
     private void readToysFromFile() {
-        List<String> listToys = new FileReadWriter().readFile("/toys.csv");
+        List<String> listToys = readWriter.readFile("/toys.csv");
         toyTypes.clear();
         int index;
         String[] array;
@@ -158,6 +224,20 @@ public class ToyLottery {
                 toyTypes.get(index).addToy(toy);
             }
         }
+    }
+
+    /**
+     * Lottery run
+     */
+    private String lotteryRun() {
+            List<String> lots = new LinkedList<>();
+            for (ToyTypeModel toyTypeModel : toyTypes) {
+                for (int i = 0; i < toyTypeModel.getWeight(); i++) {
+                    lots.add(toyTypeModel.getNameToyType());
+                }
+            }
+            Collections.shuffle(lots, rnd);
+            return lots.get(rnd.nextInt(lots.size()));
     }
 
     /**

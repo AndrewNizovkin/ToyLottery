@@ -1,4 +1,4 @@
-package toyLottery.view;
+package toyLottery.model;
 
 import toyLottery.presenter.ToyTypeModel;
 import toyLottery.presenter.ToyModel;
@@ -43,11 +43,10 @@ public class ToyType implements ToyTypeModel {
     /**
      * Removes toy from toy collection
      *
-     * @param name toy name
      * @return removed toy
      */
     @Override
-    public ToyModel removeToy(String name) {
+    public ToyModel removeToy() {
 
         return toys.remove(0);
     }
